@@ -1,0 +1,82 @@
+<?php
+/**
+	CODE: PHP DATA OBJECTS(PDO) DATABASE CONNECTIVITY
+	AUTHOR: KEVIN JUMA ASESO
+	EMAIL: KEVINMACJUMA@GMAIL.COM
+	DATE: 2nd February 2015
+
+**/
+
+class con{
+	
+
+	public function __construct(){
+		try{
+			date_default_timezone_set('Africa/Nairobi');
+			$this->con = new PDO('mysql:host=localhost;dbname=ipall','root', '');
+			
+			$this->con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->con->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+
+			//REMOVING ANY MAGIC QUOTES FOR EXTRA DATABASE SECURITY
+			if(function_exists('get_magic_quotes_gpc')&& get_magic_quotes_gpc()){
+				function undo_magic_quotes_gpc(&$array){
+					foreach($array as &$value){
+						if(is_array($value)){
+							undo_magic_quotes_gpc($value);
+						}else{
+							$value = stripslashes($value);
+						}
+					}
+				}
+				undo_magic_quotes_gpc($_GET);
+				undo_magic_quotes_gpc($_POST);
+				undo_magic_quotes_gpc($_COOKIE);
+				undo_magic_quotes_gpc($_REQUEST);
+
+			}
+
+		}catch(PDOException $e){
+			$this->error($e);
+			
+		}
+
+
+	}//END OF __construct
+
+	public function getConnection(){
+		
+		
+		return $this->con;	
+
+
+	}//END OF getConnection()
+
+	public function error($m){
+		echo 'Unable to create a secure connection. Please try again later';
+		$m->getMessage();
+
+		//SET DATE THE ERROR OCCURED
+		$dt = new DateTime();
+		
+
+		//OPEN FILE
+		$log= fopen(__DIR__ . DIRECTORY_SEPARATOR .'errorlog.txt', 'a') or die(' Couldn\'t open file');
+		$message='ERROR ENCOUNTERED: '.$dt-> format('y-d-m h:i:s').PHP_EOL.$m;
+
+		//WRITE TO FILE
+		fwrite($log, $message.PHP_EOL.PHP_EOL);
+
+		//CLOSE FILE
+		fclose($log);
+
+
+		die();
+
+	}//END OF ERROR()
+
+}
+
+
+?>
